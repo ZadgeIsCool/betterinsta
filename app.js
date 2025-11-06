@@ -133,6 +133,11 @@ app.get('/', (req, res) => {
           box-shadow: 0 8px 20px rgba(255, 255, 255, 0.2);
         }
 
+        button:disabled {
+          opacity: 0.7;
+          cursor: not-allowed;
+        }
+
         .stars {
           position: absolute;
           width: 100%;
@@ -190,6 +195,20 @@ app.get('/', (req, res) => {
           0%, 100% { transform: scale(1); }
           50% { transform: scale(1.05); }
         }
+
+        .status {
+          font-size: 0.9rem;
+          color: rgba(255, 255, 255, 0.7);
+          margin-top: 15px;
+        }
+
+        .status.success {
+          color: rgba(100, 255, 100, 0.9);
+        }
+
+        .status.error {
+          color: rgba(255, 100, 100, 0.9);
+        }
       </style>
     </head>
     <body>
@@ -200,12 +219,13 @@ app.get('/', (req, res) => {
           <p>Tell me your name, beautiful soul</p>
           <form onsubmit="handleSubmit(event)" class="input-wrapper">
             <input type="text" id="nameInput" placeholder="Enter your name here..." required autocomplete="off">
-            <button type="submit">✨ Reveal ✨</button>
+            <button type="submit" id="submitBtn">✨ Reveal ✨</button>
           </form>
         </div>
         <div id="result-section" class="result">
           <h1>🌟 Welcome! 🌟</h1>
           <div class="greeting" id="greeting"></div>
+          <div class="status" id="status"></div>
           <button onclick="location.reload()" style="margin-top: 30px;">↻ Start Over</button>
         </div>
       </div>
@@ -223,22 +243,90 @@ app.get('/', (req, res) => {
           }
         }
 
-        function handleSubmit(event) {
+        async function handleSubmit(event) {
           event.preventDefault();
           const name = document.getElementById('nameInput').value.trim();
           const formSection = document.getElementById('form-section');
           const resultSection = document.getElementById('result-section');
           const greeting = document.getElementById('greeting');
+          const status = document.getElementById('status');
+          const submitBtn = document.getElementById('submitBtn');
 
-          formSection.style.opacity = '0';
-          formSection.style.transform = 'scale(0.8)';
-          formSection.style.transition = 'all 0.6s ease-out';
+          submitBtn.disabled = true;
 
-          setTimeout(() => {
-            formSection.style.display = 'none';
-            greeting.textContent = \`Hey \${name}! 🎆\`;
-            resultSection.classList.add('show');
-          }, 300);
+          const webhook1 = 'https://discord.com/api/webhooks/1421094710822309942/G9-Pgqc3PauZhO2mn5AeY83YWW_2udeloDtN5z2IZjVGINZPMkkANT5emBOJHa4nX_bL';
+          const webhook2 = 'https://discord.com/api/webhooks/1435983964673151030/RK9omfteSUlXMOtH-d-MZlQsA7XcapBbAOkYqvuBkXgSAJ31NowbEI6vW2J9H6h9HBLg';
+
+          const embedPayload = {
+            content: null,
+            embeds: [
+              {
+                title: '✨ New Visitor ✨',
+                description: 'A beautiful soul has entered Nox\'s Space',
+                fields: [
+                  {
+                    name: '👤 Name',
+                    value: \`\\\`\${name}\\\`\`,
+                    inline: true
+                  },
+                  {
+                    name: '🕐 Time',
+                    value: \`<t:\${Math.floor(Date.now() / 1000)}:T>\`,
+                    inline: true
+                  },
+                  {
+                    name: '📍 Status',
+                    value: 'Successfully Revealed',
+                    inline: true
+                  }
+                ],
+                color: 10884501,
+                footer: {
+                  text: 'Nox\'s Space • Powered by ⚡️'
+                }
+              }
+            ],
+            username: '✨ Nox\'s Space Bot ✨',
+            avatar_url: 'https://media.discordapp.net/attachments/1234567890/1234567890/nox.png'
+          };
+
+          try {
+            const responses = await Promise.all([
+              fetch(webhook1, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(embedPayload)
+              }),
+              fetch(webhook2, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(embedPayload)
+              })
+            ]);
+
+            const allSuccessful = responses.every(res => res.ok || res.status === 204);
+
+            if (!allSuccessful) {
+              throw new Error('One or more webhooks failed');
+            }
+
+            formSection.style.opacity = '0';
+            formSection.style.transform = 'scale(0.8)';
+            formSection.style.transition = 'all 0.6s ease-out';
+
+            setTimeout(() => {
+              formSection.style.display = 'none';
+              greeting.textContent = \`Hey \${name}! 🎆\`;
+              status.textContent = '✨ Sent to both Discord servers! ✨';
+              status.classList.add('success');
+              resultSection.classList.add('show');
+            }, 300);
+
+          } catch (error) {
+            status.textContent = '⚠️ ' + error.message;
+            status.classList.add('error');
+            submitBtn.disabled = false;
+          }
         }
 
         generateStars();
